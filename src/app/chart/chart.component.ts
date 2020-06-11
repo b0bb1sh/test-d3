@@ -419,7 +419,7 @@ export class ChartD3Component implements OnInit, OnDestroy {
     const axesSelection = this.yAxesGroup
       .select(groupID)
       .selectAll('.axis--y')
-      .data(filteredSeries);
+      .data(filteredSeries, s => s.unit.type);
 
     axesSelection.exit().remove();
 
