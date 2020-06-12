@@ -114,3 +114,6 @@ export const PROBES_GRAPH_YAXIS_INFO: Record<string, YAxisInfo> = {
     }
   }
 };
+
+export const TRANSITION = d3.transition()
+  .duration(450);

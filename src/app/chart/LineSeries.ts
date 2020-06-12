@@ -95,7 +95,9 @@ export class LineSeries implements D3ChartType {
 
     // If showDataGaps === true, use the update pattern for each path
     if (this.showDataGaps) {
-      lines.exit().remove();
+      lines.exit()
+        .remove();
+
       lines.enter()
         .append('path')
         .attr('class', `series lines linesColor${_.replace(this.color, '#', '')}`)

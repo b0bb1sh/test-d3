@@ -1,8 +1,9 @@
-import { D3ChartType, ChartDatum, XDomainType } from './chart.model';
+import { D3ChartType, ChartDatum, XDomainType, TRANSITION } from './chart.model';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-import { ScaleBand, HSLColor, Color } from 'd3';
+import { ScaleBand } from 'd3';
 import * as d3 from 'd3';
+
 
 const xOffset: Record<XDomainType, Function> = {
   'number': (x: number, interval: number) => x - (interval / 2),
@@ -119,8 +120,9 @@ export class BarSeries implements D3ChartType {
       .data(_.filter(data, d => !_.isNil(d) && !_.isNil(d.x)));
 
     rects.exit()
-      // transition
-      // .attr('height', 0)
+      .transition(TRANSITION)
+      .attr('height', 0)
+      .attr('y', this.yScale(0))
       .remove();
 
 
@@ -130,6 +132,8 @@ export class BarSeries implements D3ChartType {
         .attr('class', `bars barsColor${_.replace(this.color, '#', '-')}`)
         .attr('fill', this.color)
         .merge(rects)
+        .transition(TRANSITION)
+        .attr('opacity', 1)
         .attr('d', d => this.topRoundedRect(
           this.getXPosition(d),
           this.yScale(d.y),
@@ -146,7 +150,7 @@ export class BarSeries implements D3ChartType {
         .merge(rects)
         .attr('x', d => this.getXPosition(d))
         .attr('width', this.scaleBandX.bandwidth())
-        // .transition(BASE_TRANSITION)
+        .transition(TRANSITION)
         .attr('height', d => this.yScale(0) - this.yScale(d.y))
         .attr('y', d => this.yScale(d.y));
   }

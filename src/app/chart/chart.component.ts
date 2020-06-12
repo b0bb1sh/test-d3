@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input, ViewChild, ElementRef } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
-import { AxisDomain, ChartConfig, ChartDatum, ChartSeries, Unit, YAxisInfo, PROBES_GRAPH_YAXIS_INFO, XDomainType } from './chart.model';
+import { AxisDomain, ChartConfig, ChartDatum, ChartSeries, Unit, YAxisInfo, PROBES_GRAPH_YAXIS_INFO, XDomainType, TRANSITION } from './chart.model';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as moment from 'moment';
