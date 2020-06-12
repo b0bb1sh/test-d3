@@ -74,6 +74,8 @@ export class ChartD3Component implements OnInit, OnDestroy {
         // Check if data exists
         if (this.isDatasetEmpty(seriesList)) {
           // TODO show no data message
+          this.dataGroup.selectAll('.series').remove();
+          this.legendContainer.selectAll('g.legendItem').remove();
           return;
         }
         _.forEach(seriesList, series => {
@@ -121,7 +123,8 @@ export class ChartD3Component implements OnInit, OnDestroy {
           this.colors(s.label),
           s.label,
           s.showCircles,
-          s.smoothStyle);
+          s.smoothStyle,
+          s.showDataGaps);
       } else if (s.chartType === 'bar') {
         s.d3ChartInstance = new BarSeries(
           this.colors(s.label),
@@ -263,7 +266,7 @@ export class ChartD3Component implements OnInit, OnDestroy {
 
     const nearestValue = _.chain(this.seriesList)
       .map(s => {
-        const nearest = getNearestValue(s.data);
+        const nearest = getNearestValue(_.filter(s.data, d => !_.isNil(d)));
         const deltaX = getDiff[this.xDomainType](
           nearest.x,
           xValueMap[this.xDomainType](mouseCoords[0])
@@ -286,8 +289,10 @@ export class ChartD3Component implements OnInit, OnDestroy {
       const tooltipData = _.chain(this.seriesList)
         .filter(series => !series.hidden)
         .map(series => {
-          const tooltipValue = _.find(series.data,
-            d => getDiff[this.xDomainType](nearestValue.x, d.x) < this.interval / 10);
+          const tooltipValue = _.chain(series.data)
+            .filter(d => !_.isNil(d))
+            .find(d => getDiff[this.xDomainType](nearestValue.x, d.x) < this.interval / 10)
+            .value();
           series.d3ChartInstance.updateFocus(tooltipValue);
           return tooltipValue ?
             `<div style="width:15px; height:15px; border-radius:3px; margin-right:0.4rem; background-color:${
@@ -392,17 +397,24 @@ export class ChartD3Component implements OnInit, OnDestroy {
       .filter(s => s.unit.type === type && !s.hidden)
       .map((s: ChartSeries) => s.data)
       .flatten()
+      .filter(v => !_.isNil(v))
       .value();
 
     const checkMinMaxValues = dataSize !== _.size(this.seriesList);
 
     const getMin = (series: ChartSeries): number => {
-      const min = _.min(_.map(checkMinMaxValues ? getDataByType(series.unit.type) : series.data, (d: ChartDatum) => d.y));
+      const min = _.min(_.map(checkMinMaxValues ?
+        getDataByType(series.unit.type) :
+        _.filter(series.data, d => !_.isNil(d)),
+        (d: ChartDatum) => d.y));
       return min > 0 ? 0 : min;
     };
 
     const getMax = (series: ChartSeries): number => {
-      const max = _.max(_.map(checkMinMaxValues ? getDataByType(series.unit.type) : series.data, (d: ChartDatum) => d.y));
+      const max = _.max(_.map(checkMinMaxValues ?
+        getDataByType(series.unit.type) :
+        _.filter(series.data, d => !_.isNil(d)),
+        (d: ChartDatum) => d.y));
       return max > 2 ? max : 2;
     };
 

@@ -33,6 +33,7 @@ export interface ChartSeries {
   color?: string;
   smoothStyle?: boolean;
   showCircles?: boolean;
+  showDataGaps?: boolean;
   d3ChartInstance?: D3ChartType;
 }
 

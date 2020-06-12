@@ -1,18 +1,52 @@
 <div style="text-align:center">
   <h1>
-    Welcome to {{ title }}!
+    Welcome to d3.js!
   </h1>
 
-  <d3-chart collapsible-body
-    [interval]="timeInterval$|async"
-    [xDomain]="xAxesDomain$|async"
-    [xDomainType]="'time'"
-    [data$]="data">
-  </d3-chart>
+  <div style="padding:20px">
+    <d3-chart collapsible-body 
+      [interval]="interval$|async" 
+      [xDomain]="xAxesDomain$|async" 
+      [xDomainType]="xDomainType$|async"
+      [data$]="data">
+    </d3-chart>
+  </div>
 
-  <button (click)="addSeries()">Add</button>
-  <button (click)="removeSeries()">Remove</button>
 
-  <button (click)="addDatum()">Add Datum</button>
-  <button (click)="removeDatum()">Remove Datum</button>
+  <div style="margin-top: 30px; display:inline-flex;">
+
+    <div style="padding:0.5rem">
+      <input name="xTDomain" type="radio" value="time" [ngModel]="xDomainType$|async" (ngModelChange)="updateXDomain($event)" />
+      <label for="xTDomain">Set time domain</label>
+    </div>
+
+    <div style="padding:0.5rem">
+      <input name="xNDomain" type="radio" value="number" [ngModel]="xDomainType$|async" (ngModelChange)="updateXDomain($event)" />
+      <label for="xNDomain">Set number domain</label>
+    </div>
+
+    <div style="padding:0.5rem">
+      <input name="smooth" type="checkbox" [checked]="smoothStyle" (change)="changeSmoothStyle()" />
+      <label for="smooth">Set smooth style</label>
+    </div>
+
+    <div style="padding:0.5rem">
+      <input name="dataGap" type="checkbox" [ngModel]="showDataGap" (change)="updateShowDataGaps()" />
+      <label for="dataGap">Show data gaps</label>
+    </div>
+
+    <button (click)="addSeries('line')">Add Line Series</button>
+    <button (click)="addSeries('bar')">Add Bar Series</button>
+  </div>
+
+  <div style="margin-top: 40px">
+    <div *ngFor="let series of data|async">
+      <div style="margin-top:1rem; margin-bottom:1rem">
+        <span style="margin-right: 0.5rem">{{series.label}}</span>
+        <button (click)="removeSeries(series)">Remove Series</button>
+        <button (click)="addDatum(series)">Add Datum</button>
+        <button (click)="removeDatum(series)">Remove Last Datum</button>
+      </div>
+    </div>
+  </div>
 </div>

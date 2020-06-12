@@ -116,7 +116,7 @@ export class BarSeries implements D3ChartType {
   update: Function = (data: Array<ChartDatum>): void => {
     const rects = this.parentSelector
       .selectAll(`.barsColor${_.replace(this.color, '#', '-')}`)
-      .data(_.filter(data, d => !_.isNil(d.x)));
+      .data(_.filter(data, d => !_.isNil(d) && !_.isNil(d.x)));
 
     rects.exit()
       // transition

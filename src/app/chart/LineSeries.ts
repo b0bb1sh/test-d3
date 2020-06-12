@@ -28,6 +28,7 @@ export class LineSeries implements D3ChartType {
   readonly parentSelector;
 
   private showCircles: boolean;
+  private showDataGaps: boolean;
   private datumFocus: any;
   smoothStyle: boolean;
 
@@ -35,11 +36,14 @@ export class LineSeries implements D3ChartType {
     color: string,
     label: string,
     showCircles: boolean,
-    smooth: boolean) {
+    smooth: boolean,
+    showDataGaps?: boolean
+  ) {
     this.color = color;
     this.label = label;
     this.showCircles = showCircles;
     this.smoothStyle = smooth;
+    this.showDataGaps = showDataGaps;
 
     this.parentSelector = d3.select(`#series${_.replace(this.color, '#', '')}`);
     this.datumFocus = this.parentSelector.append('circle')
@@ -70,21 +74,58 @@ export class LineSeries implements D3ChartType {
   }
 
   update(data: Array<ChartDatum>): void {
-    this.parentSelector
-      .select(`.linesColor${_.replace(this.color, '#', '')}`)
-      .datum(data)
-      .attr('d', d3.line()
+    let dataMatrix;
+    if (this.showDataGaps) {
+      dataMatrix = _.chain(data)
+        .reduce(function (acc, value) {
+          _.isNil(value) ?
+            acc.push(new Array()) :
+            _.last(acc).push(value);
+          return acc;
+        }, [new Array()])
+        .filter(d => _.size(d) > 1)
+        .value();
+    } else {
+      dataMatrix = [_.filter(data, d => !_.isNil(d))];
+    }
+
+    const lines = this.parentSelector
+      .selectAll(`.linesColor${_.replace(this.color, '#', '')}`)
+      .data(dataMatrix);
+
+    // If showDataGaps === true, use the update pattern for each path
+    if (this.showDataGaps) {
+      lines.exit().remove();
+      lines.enter()
+        .append('path')
+        .attr('class', `series lines linesColor${_.replace(this.color, '#', '')}`)
+        .attr('fill', 'none')
+        .attr('stroke', this.color)
+        .attr('stroke-width', 2)
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-linecap', 'round')
+        .merge(lines)
+        .attr('d', d3.line()
+          .curve(this.smoothStyle ? d3.curveCardinal : d3.curveLinear)
+          .x((v) => this.xScale(_.get(v, 'x')))
+          .y((v) => this.yScale(_.get(v, 'y')))
+        );
+    } else {
+      // If there's a single line, we don't use the update pattern
+      lines.attr('d', d3.line()
         .curve(this.smoothStyle ? d3.curveCardinal : d3.curveLinear)
         .x((v) => this.xScale(_.get(v, 'x')))
-        .y((v) => this.yScale(_.get(v, 'y'))));
+        .y((v) => this.yScale(_.get(v, 'y')))
+      );
+    }
 
     if (this.showCircles) {
-      const circles = this.parentSelector.selectAll(`.circlesColor${_.replace(this.color, '#', '')}`)
-        .data(data);
+      const circles = this.parentSelector.selectAll(`.circlesColor${_.replace(this.color, '#', '-')}`)
+        .data(_.filter(data, d => !_.isNil(d)));
       circles.exit().remove();
       circles.enter()
         .append('circle')
-        .attr('class', `circles circlesColor${_.replace(this.color, '#', '')}`)
+        .attr('class', `circles circlesColor${_.replace(this.color, '#', '-')}`)
         .attr('r', 1.5)
         .attr('fill', 'none')
         .attr('stroke', this.color)
