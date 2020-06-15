@@ -16,6 +16,14 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "b3-chart": [
+        "dist/b3-chart"
+      ],
+      "b3-chart/*": [
+        "dist/b3-chart/*"
+      ]
+    }
   }
 }

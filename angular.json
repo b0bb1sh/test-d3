@@ -129,6 +129,41 @@
           }
         }
       }
+    },
+    "b3-chart": {
+      "root": "projects/b3-chart",
+      "sourceRoot": "projects/b3-chart/src",
+      "projectType": "library",
+      "prefix": "b3-chart",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/b3-chart/tsconfig.lib.json",
+            "project": "projects/b3-chart/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/b3-chart/src/test.ts",
+            "tsConfig": "projects/b3-chart/tsconfig.spec.json",
+            "karmaConfig": "projects/b3-chart/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/b3-chart/tsconfig.lib.json",
+              "projects/b3-chart/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }
   },
   "defaultProject": "test-d3"

@@ -1,8 +1,10 @@
 import * as _ from 'lodash';
 import * as d3 from 'd3';
-import { D3ChartType, ChartDatum, XDomainType } from './chart.model';
+import { B3ChartType, ChartDatum } from './b3-chart.model';
+import { XDomainType } from 'src/app/chart/chart.model';
 
-export class LineSeries implements D3ChartType {
+export class LineSeries implements B3ChartType {
+
   // XScale
   private _xScale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
   xDomainType: XDomainType;

@@ -1,12 +1,12 @@
 import { Component, OnInit, OnDestroy, Input, ViewChild, ElementRef } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
-import { AxisDomain, ChartConfig, ChartDatum, ChartSeries, Unit, YAxisInfo, PROBES_GRAPH_YAXIS_INFO, XDomainType } from '../../../projects/b3-chart/src/lib/b3-chart.model';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-import { LineSeries } from '../../../projects/b3-chart/src/lib/LineSeries';
-import { BarSeries } from '../../../projects/b3-chart/src/lib/BarSeries';
-import { ScaleTime, ScaleLinear } from 'd3';
+import { LineSeries } from './LineSeries';
+import { BarSeries } from './BarSeries';
+import { ChartSeries, AxisDomain, XDomainType, ChartConfig, ChartDatum, Unit, YAxisInfo, PROBES_GRAPH_YAXIS_INFO } from '../public_api';
+import { ScaleLinear, ScaleTime } from 'd3';
 
 
 const WIDTH = 960;
@@ -16,12 +16,29 @@ const TEXT_PADDING = 20;
 
 @Component({
   // tslint:disable-next-line: component-selector
-  selector: 'd3-chart',
-  templateUrl: './chart.component.html',
-  styleUrls: ['./chart.component.sass']
+  selector: 'b3-chart',
+  template: `<svg #chartContainer></svg>
+    <div id='tooltip' class='tooltip p-1'></div>
+    <!--Add timeline
+      <svg *ngIf="showTimeline" #timelineContainer></svg>-->
+    <svg #legendContainer class="legendContainer"></svg>`,
+  styles: [`
+    .legendContainer {
+      width: 100%
+      padding-left: 1em
+      padding-right: 1em
+    }
+    .tooltip {
+      position: absolute
+      background-color: #343b40
+      color: #eeefef
+      border-radius: 3px
+      padding: 0.5rem
+    }
+  `]
 })
 
-export class ChartD3Component implements OnInit, OnDestroy {
+export class B3ChartComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<Array<ChartSeries>>;
   @Input() xDomain: AxisDomain<any>;
   @Input() xDomainType: XDomainType;
@@ -123,7 +140,6 @@ export class ChartD3Component implements OnInit, OnDestroy {
         s.d3ChartInstance = new LineSeries(
           this.colors(s.label),
           s.label,
-          this.xDomainType,
           s.showCircles,
           s.smoothStyle,
           s.showDataGaps);
@@ -544,13 +560,11 @@ export class ChartD3Component implements OnInit, OnDestroy {
     const rangeRound: Record<XDomainType, Function> = {
       'number': () => [
         0,
-        (this.x as ScaleLinear<number, number>)((firstXTick as number) + this.interval) -
-        (this.x as ScaleLinear<number, number>)((firstXTick as number))]
+        this.x((firstXTick as number) + this.interval) - (this.x as ScaleLinear<number, number>)((firstXTick as number))]
       ,
       'time': () => [
         0,
-        (this.x as ScaleTime<number, number>)(moment(firstXTick).add(this.interval, 's')) -
-        (this.x as ScaleTime<number, number>)(moment(firstXTick))]
+        this.x(moment(firstXTick).add(this.interval, 's')) - (this.x as ScaleTime<number, number>)(moment(firstXTick))]
     };
 
     this.scaleBandX

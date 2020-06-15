@@ -1,4 +1,4 @@
-import { D3ChartType, ChartDatum, XDomainType, TRANSITION_DURATION } from './chart.model';
+import { B3ChartType, ChartDatum, XDomainType, TRANSITION_DURATION } from './b3-chart.model';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 import { ScaleBand } from 'd3';
@@ -10,7 +10,7 @@ const xOffset: Record<XDomainType, Function> = {
   'time': (x: number, interval: number) => moment(x).subtract(interval / 2, 's')
 };
 
-export class BarSeries implements D3ChartType {
+export class BarSeries implements B3ChartType {
 
   color: string;
   label: string;
@@ -37,9 +37,7 @@ export class BarSeries implements D3ChartType {
     this._xScale = scale;
   }
   get xScale() {
-    return this.xDomainType === 'number' ?
-      this._xScale as d3.ScaleLinear<number, number> :
-      this._xScale as d3.ScaleTime<number, number>;
+    return this._xScale;
   }
 
   // yScale

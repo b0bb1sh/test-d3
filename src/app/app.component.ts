@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { ChartSeries, AxisDomain } from './chart/chart.model';
+import { ChartSeries, AxisDomain } from '../../projects/b3-chart/src/lib/b3-chart.model';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 
