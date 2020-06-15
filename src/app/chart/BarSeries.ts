@@ -1,4 +1,4 @@
-import { D3ChartType, ChartDatum, XDomainType, TRANSITION } from './chart.model';
+import { D3ChartType, ChartDatum, XDomainType, TRANSITION_DURATION } from './chart.model';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 import { ScaleBand } from 'd3';
@@ -120,39 +120,45 @@ export class BarSeries implements D3ChartType {
       .data(_.filter(data, d => !_.isNil(d) && !_.isNil(d.x)));
 
     rects.exit()
-      .transition(TRANSITION)
+      .transition()
+      .duration(TRANSITION_DURATION)
+      .attr('opacity', this.smoothStyle ? 0 : null)
       .attr('height', 0)
       .attr('y', this.yScale(0))
       .remove();
 
-
-    this.smoothStyle ?
-      rects.enter()
+    if (this.smoothStyle) {
+      const rectsToUpdate = rects.enter()
         .append('path')
         .attr('class', `bars barsColor${_.replace(this.color, '#', '-')}`)
         .attr('fill', this.color)
-        .merge(rects)
-        .transition(TRANSITION)
+        .attr('y', this.yScale(0))
+        .attr('height', 0)
+        .merge(rects);
+      rectsToUpdate.transition()
+        .duration(250)
         .attr('opacity', 1)
         .attr('d', d => this.topRoundedRect(
           this.getXPosition(d),
           this.yScale(d.y),
           this.scaleBandX.bandwidth(),
           this.yScale(0) - this.yScale(d.y)
-        ))
-      :
-      rects.enter()
+        ));
+    } else {
+      const rectsToUpdate = rects.enter()
         .append('rect')
         .attr('class', `bars barsColor${_.replace(this.color, '#', '-')}`)
         .attr('fill', this.color)
         .attr('y', this.yScale(0))
         .attr('height', 0)
-        .merge(rects)
-        .attr('x', d => this.getXPosition(d))
+        .merge(rects);
+      rectsToUpdate.attr('x', d => this.getXPosition(d))
         .attr('width', this.scaleBandX.bandwidth())
-        .transition(TRANSITION)
+        .transition()
+        .duration(TRANSITION_DURATION)
         .attr('height', d => this.yScale(0) - this.yScale(d.y))
         .attr('y', d => this.yScale(d.y));
+    }
   }
 }
 
