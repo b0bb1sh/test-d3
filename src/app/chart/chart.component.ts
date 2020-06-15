@@ -4,8 +4,8 @@ import { AxisDomain, ChartConfig, ChartDatum, ChartSeries, Unit, YAxisInfo, PROB
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-import { LineSeries } from '../../../projects/b3-chart/src/lib/LineSeries';
-import { BarSeries } from '../../../projects/b3-chart/src/lib/BarSeries';
+import { LineSeries } from './LineSeries';
+import { BarSeries } from './BarSeries';
 import { ScaleTime, ScaleLinear } from 'd3';
 
 
@@ -308,8 +308,12 @@ export class ChartD3Component implements OnInit, OnDestroy {
       // Update tooltip line position
       this.tooltipLine.raise();
       this.tooltipLine.attr('stroke', 'black')
-        .attr('x1', this.x(nearestValue.x))
-        .attr('x2', this.x(nearestValue.x))
+        .attr('x1', (this.xDomainType === 'time' ?
+          this.x as ScaleTime<number, number> :
+          this.x as ScaleLinear<number, number>)(nearestValue.x))
+        .attr('x2', (this.xDomainType === 'time' ?
+          this.x as ScaleTime<number, number> :
+          this.x as ScaleLinear<number, number>)(nearestValue.x))
         .attr('y1', 0)
         .attr('y2', this.height);
 

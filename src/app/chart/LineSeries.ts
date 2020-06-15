@@ -3,16 +3,19 @@ import * as d3 from 'd3';
 import { D3ChartType, ChartDatum, XDomainType } from './chart.model';
 
 export class LineSeries implements D3ChartType {
+  xDomainType: XDomainType;
+
   // XScale
   private _xScale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
-  xDomainType: XDomainType;
-  set xScale(scale) {
-    this._xScale = scale;
+  set xScale(scale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>) {
+    this._xScale = this.xDomainType === 'time' ?
+      (scale as d3.ScaleTime<number, number>) :
+      (scale as d3.ScaleLinear<number, number>);
   }
-  get xScale() {
-    return this.xDomainType === 'number' ?
-      this._xScale as d3.ScaleLinear<number, number> :
-      this._xScale as d3.ScaleTime<number, number>;
+  get xScale(): d3.ScaleTime<number, number> | d3.ScaleLinear<number, number> {
+    return this.xDomainType === 'time' ?
+      (this._xScale as d3.ScaleTime<number, number>) :
+      (this._xScale as d3.ScaleLinear<number, number>);
   }
 
   // yScale
