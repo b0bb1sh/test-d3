@@ -561,11 +561,13 @@ export class B3ChartComponent implements OnInit, OnDestroy {
     const rangeRound: Record<XDomainType, Function> = {
       'number': () => [
         0,
-        this.x((firstXTick as number) + this.interval) - (this.x as ScaleLinear<number, number>)((firstXTick as number))]
+        (this.x as ScaleLinear<number, number>)((firstXTick as number) + this.interval) -
+         (this.x as ScaleLinear<number, number>)((firstXTick as number))]
       ,
       'time': () => [
         0,
-        this.x(moment(firstXTick).add(this.interval, 's')) - (this.x as ScaleTime<number, number>)(moment(firstXTick))]
+        (this.x as ScaleTime<number, number>)(moment(firstXTick).add(this.interval, 's')) - 
+        (this.x as ScaleTime<number, number>)(moment(firstXTick))]
     };
 
     this.scaleBandX

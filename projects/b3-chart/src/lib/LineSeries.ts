@@ -72,7 +72,9 @@ export class LineSeries implements B3ChartType {
       this.datumFocus
         .attr('r', 5)
         .attr('display', 'visible')
-        .attr('cx', this.xScale(datumToHighlight.x))
+        .attr('cx', this.xDomainType ?
+          (this.xScale as d3.ScaleLinear<number, number>)(datumToHighlight.x) :
+          (this.xScale as d3.ScaleTime<number, number>)(datumToHighlight.x))
         .attr('cy', this.yScale(datumToHighlight.y));
     } else {
       this.datumFocus.attr('display', 'none');
@@ -115,7 +117,9 @@ export class LineSeries implements B3ChartType {
         .merge(lines)
         .attr('d', d3.line()
           .curve(this.smoothStyle ? d3.curveCardinal : d3.curveLinear)
-          .x((v) => this.xScale(_.get(v, 'x')))
+          .x((v) => this.xDomainType ?
+            (this.xScale as d3.ScaleLinear<number, number>)(_.get(v, 'x')) :
+            (this.xScale as d3.ScaleTime<number, number>)(_.get(v, 'x')))
           .y((v) => this.yScale(_.get(v, 'y')))
         );
     } else {

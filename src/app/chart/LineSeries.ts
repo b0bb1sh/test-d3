@@ -1,20 +1,19 @@
 import * as _ from 'lodash';
 import * as d3 from 'd3';
 import { D3ChartType, ChartDatum, XDomainType } from './chart.model';
+import { scaleLinear } from 'd3';
 
 export class LineSeries implements D3ChartType {
   xDomainType: XDomainType;
 
   // XScale
-  private _xScale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
-  set xScale(scale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>) {
-    this._xScale = this.xDomainType === 'time' ?
-      (scale as d3.ScaleTime<number, number>) :
-      (scale as d3.ScaleLinear<number, number>);
+  private _xScale;
+  set xScale(scale) {
+    this._xScale = scale;
   }
   get xScale(): d3.ScaleTime<number, number> | d3.ScaleLinear<number, number> {
-    return this.xDomainType === 'time' ?
-      (this._xScale as d3.ScaleTime<number, number>) :
+    return this.xDomainType === 'time' ? 
+    (this._xScale as d3.ScaleTime<number, number>) :
       (this._xScale as d3.ScaleLinear<number, number>);
   }
 
