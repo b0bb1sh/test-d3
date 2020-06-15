@@ -140,6 +140,7 @@ export class B3ChartComponent implements OnInit, OnDestroy {
         s.d3ChartInstance = new LineSeries(
           this.colors(s.label),
           s.label,
+          this.xDomainType,
           s.showCircles,
           s.smoothStyle,
           s.showDataGaps);
