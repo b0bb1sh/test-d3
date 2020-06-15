@@ -1,26 +1,26 @@
 import * as _ from 'lodash';
 import * as d3 from 'd3';
 import { D3ChartType, ChartDatum, XDomainType } from './chart.model';
-import { scaleLinear } from 'd3';
+import { ScaleLinear, ScaleTime } from 'd3';
 
 export class LineSeries implements D3ChartType {
   xDomainType: XDomainType;
 
   // XScale
-  private _xScale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
-  set xScale(scale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>) {
+  private _xScale: ScaleTime<number, number> | ScaleLinear<number, number>;
+  set xScale(scale: ScaleTime<number, number> | ScaleLinear<number, number>) {
     this._xScale = this.xDomainType === 'time' ?
-      (scale as d3.ScaleTime<number, number>) :
-      (scale as d3.ScaleLinear<number, number>);
+      (scale as ScaleTime<number, number>) :
+      (scale as ScaleLinear<number, number>);
   }
-  get xScale(): d3.ScaleTime<number, number> | d3.ScaleLinear<number, number> {
+  get xScale(): ScaleTime<number, number> | ScaleLinear<number, number> {
     return this.xDomainType === 'time' ?
-      (this._xScale as d3.ScaleTime<number, number>) :
-      (this._xScale as d3.ScaleLinear<number, number>);
+      (this._xScale as ScaleTime<number, number>) :
+      (this._xScale as ScaleLinear<number, number>);
   }
 
   // yScale
-  private _yScale: d3.ScaleLinear<number, number>;
+  private _yScale: ScaleLinear<number, number>;
   set yScale(scale) {
     this._yScale = scale;
   }
@@ -74,7 +74,9 @@ export class LineSeries implements D3ChartType {
       this.datumFocus
         .attr('r', 5)
         .attr('display', 'visible')
-        .attr('cx', this.xScale(datumToHighlight.x))
+        .attr('cx', this.xDomainType === 'number' ?
+          (this.xScale as ScaleLinear<number, number>)(datumToHighlight.x) :
+          (this.xScale as ScaleTime<number, number>)(datumToHighlight.x))
         .attr('cy', this.yScale(datumToHighlight.y));
     } else {
       this.datumFocus.attr('display', 'none');
@@ -117,15 +119,19 @@ export class LineSeries implements D3ChartType {
         .merge(lines)
         .attr('d', d3.line()
           .curve(this.smoothStyle ? d3.curveCardinal : d3.curveLinear)
-          .x((v) => this.xScale(_.get(v, 'x')))
+          .x((v) => this.xDomainType === 'number' ?
+            (this.xScale as ScaleLinear<number, number>)(_.get(v, 'x')) :
+            (this.xScale as ScaleTime<number, number>)(_.get(v, 'x')))
           .y((v) => this.yScale(_.get(v, 'y')))
         );
     } else {
       // If there's a single line, we don't use the update pattern
       lines.attr('d', d3.line()
         .curve(this.smoothStyle ? d3.curveCardinal : d3.curveLinear)
-        .x((v) => this.xScale(_.get(v, 'x')))
-        .y((v) => this.yScale(_.get(v, 'y')))
+        .x(v => this.xDomainType === 'number' ?
+          (this.xScale as ScaleLinear<number, number>)(_.get(v, 'x')) :
+          (this.xScale as ScaleTime<number, number>)(_.get(v, 'x')))
+        .y(v => this.yScale(_.get(v, 'y')))
       );
     }
 
@@ -140,7 +146,9 @@ export class LineSeries implements D3ChartType {
         .attr('fill', 'none')
         .attr('stroke', this.color)
         .merge(circles)
-        .attr('cx', d => this.xScale(d.x))
+        .attr('cx', d => this.xDomainType === 'number' ?
+          (this.xScale as ScaleLinear<number, number>)(d.x) :
+          (this.xScale as ScaleTime<number, number>)(d.x))
         .attr('cy', d => this.yScale(d.y));
     }
 
