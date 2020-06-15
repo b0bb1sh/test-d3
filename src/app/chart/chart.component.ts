@@ -6,6 +6,7 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 import { LineSeries } from './LineSeries';
 import { BarSeries } from './BarSeries';
+import { ScaleTime, ScaleLinear } from 'd3';
 
 
 const WIDTH = 960;
@@ -122,6 +123,7 @@ export class ChartD3Component implements OnInit, OnDestroy {
         s.d3ChartInstance = new LineSeries(
           this.colors(s.label),
           s.label,
+          this.xDomainType,
           s.showCircles,
           s.smoothStyle,
           s.showDataGaps);
@@ -306,8 +308,12 @@ export class ChartD3Component implements OnInit, OnDestroy {
       // Update tooltip line position
       this.tooltipLine.raise();
       this.tooltipLine.attr('stroke', 'black')
-        .attr('x1', this.x(nearestValue.x))
-        .attr('x2', this.x(nearestValue.x))
+        .attr('x1', (this.xDomainType === 'time' ?
+          this.x as ScaleTime<number, number> :
+          this.x as ScaleLinear<number, number>)(nearestValue.x))
+        .attr('x2', (this.xDomainType === 'time' ?
+          this.x as ScaleTime<number, number> :
+          this.x as ScaleLinear<number, number>)(nearestValue.x))
         .attr('y1', 0)
         .attr('y2', this.height);
 
@@ -542,11 +548,13 @@ export class ChartD3Component implements OnInit, OnDestroy {
     const rangeRound: Record<XDomainType, Function> = {
       'number': () => [
         0,
-        this.x((firstXTick as number) + this.interval) - this.x((firstXTick as number))]
+        (this.x as ScaleLinear<number, number>)((firstXTick as number) + this.interval) -
+        (this.x as ScaleLinear<number, number>)((firstXTick as number))]
       ,
       'time': () => [
         0,
-        this.x(moment(firstXTick).add(this.interval, 's')) - this.x(moment(firstXTick))]
+        (this.x as ScaleTime<number, number>)(moment(firstXTick).add(this.interval, 's')) -
+        (this.x as ScaleTime<number, number>)(moment(firstXTick))]
     };
 
     this.scaleBandX

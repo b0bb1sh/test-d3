@@ -1,7 +1,7 @@
 import { D3ChartType, ChartDatum, XDomainType, TRANSITION_DURATION } from './chart.model';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-import { ScaleBand } from 'd3';
+import { ScaleBand, ScaleLinear, ScaleTime } from 'd3';
 import * as d3 from 'd3';
 
 
@@ -32,12 +32,16 @@ export class BarSeries implements D3ChartType {
   }
 
   // xScale
-  private _xScale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
-  set xScale(scale) {
-    this._xScale = scale;
+  private _xScale: ScaleLinear<number, number> | ScaleTime<number, number>;
+  set xScale(scale: ScaleLinear<number, number> | ScaleTime<number, number>) {
+    this._xScale = this.xDomainType === 'time' ?
+      (scale as ScaleTime<number, number>) :
+      (scale as ScaleLinear<number, number>);;
   }
-  get xScale() {
-    return this._xScale;
+  get xScale(): ScaleLinear<number, number> | ScaleTime<number, number> {
+    return this.xDomainType === 'time' ?
+      (this._xScale as ScaleTime<number, number>) :
+      (this._xScale as ScaleLinear<number, number>);
   }
 
   // yScale

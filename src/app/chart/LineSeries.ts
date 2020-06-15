@@ -1,16 +1,22 @@
 import * as _ from 'lodash';
 import * as d3 from 'd3';
-import { D3ChartType, ChartDatum } from './chart.model';
+import { D3ChartType, ChartDatum, XDomainType } from './chart.model';
+import { scaleLinear } from 'd3';
 
 export class LineSeries implements D3ChartType {
+  xDomainType: XDomainType;
 
   // XScale
   private _xScale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
-  set xScale(scale) {
-    this._xScale = scale;
+  set xScale(scale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>) {
+    this._xScale = this.xDomainType === 'time' ?
+      (scale as d3.ScaleTime<number, number>) :
+      (scale as d3.ScaleLinear<number, number>);
   }
-  get xScale() {
-    return this._xScale;
+  get xScale(): d3.ScaleTime<number, number> | d3.ScaleLinear<number, number> {
+    return this.xDomainType === 'time' ?
+      (this._xScale as d3.ScaleTime<number, number>) :
+      (this._xScale as d3.ScaleLinear<number, number>);
   }
 
   // yScale
@@ -35,12 +41,14 @@ export class LineSeries implements D3ChartType {
   constructor(
     color: string,
     label: string,
+    xDomainType: XDomainType,
     showCircles: boolean,
     smooth: boolean,
     showDataGaps?: boolean
   ) {
     this.color = color;
     this.label = label;
+    this.xDomainType = xDomainType;
     this.showCircles = showCircles;
     this.smoothStyle = smooth;
     this.showDataGaps = showDataGaps;
