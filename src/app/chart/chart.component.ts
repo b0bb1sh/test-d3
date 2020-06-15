@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 import { LineSeries } from './LineSeries';
 import { BarSeries } from './BarSeries';
-import { ScaleTime, ScaleLinear } from 'd3';
+import { ScaleTime, ScaleLinear, ScaleOrdinal } from 'd3';
 
 
 const WIDTH = 960;
@@ -36,10 +36,10 @@ export class ChartD3Component implements OnInit, OnDestroy {
   @ViewChild('chartContainer') private chartContainerRef: ElementRef;
   @ViewChild('legendContainer') private legendContainerRef: ElementRef;
 
-  private x: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
+  private x: ScaleTime<number, number> | ScaleLinear<number, number>;
   private scaleBandX;
-  private ys: Record<string, d3.ScaleLinear<number, number>> = {};
-  private colors: d3.ScaleOrdinal<string, string>;
+  private ys: Record<string, ScaleLinear<number, number>> = {};
+  private colors: ScaleOrdinal<string, string>;
   private bisect = d3.bisector((d: ChartDatum) => d.x);
   private width: number;
   private height: number;
@@ -308,12 +308,12 @@ export class ChartD3Component implements OnInit, OnDestroy {
       // Update tooltip line position
       this.tooltipLine.raise();
       this.tooltipLine.attr('stroke', 'black')
-        .attr('x1', (this.xDomainType === 'time' ?
-          this.x as ScaleTime<number, number> :
-          this.x as ScaleLinear<number, number>)(nearestValue.x))
-        .attr('x2', (this.xDomainType === 'time' ?
-          this.x as ScaleTime<number, number> :
-          this.x as ScaleLinear<number, number>)(nearestValue.x))
+        .attr('x1', this.xDomainType === 'time' ?
+          (this.x as ScaleTime<number, number>)(nearestValue.x) :
+          (this.x as ScaleLinear<number, number>)(nearestValue.x))
+        .attr('x2', this.xDomainType === 'time' ?
+          (this.x as ScaleTime<number, number>)(nearestValue.x) :
+          (this.x as ScaleLinear<number, number>)(nearestValue.x))
         .attr('y1', 0)
         .attr('y2', this.height);
 

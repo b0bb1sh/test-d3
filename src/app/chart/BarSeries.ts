@@ -5,11 +5,6 @@ import { ScaleBand, ScaleLinear, ScaleTime } from 'd3';
 import * as d3 from 'd3';
 
 
-const xOffset: Record<XDomainType, Function> = {
-  'number': (x: number, interval: number) => x - (interval / 2),
-  'time': (x: number, interval: number) => moment(x).subtract(interval / 2, 's')
-};
-
 export class BarSeries implements D3ChartType {
 
   color: string;
@@ -41,7 +36,7 @@ export class BarSeries implements D3ChartType {
   }
 
   // yScale
-  private _yScale: d3.ScaleLinear<number, number>;
+  private _yScale: ScaleLinear<number, number>;
   set yScale(scale) {
     this._yScale = scale;
   }
@@ -72,8 +67,16 @@ export class BarSeries implements D3ChartType {
   }
 
   getXPosition = (d: ChartDatum) => {
-    return this.xScale(_.get(xOffset, this.xDomainType)(d.x, this.interval))
-      + this.scaleBandX(this.label);
+    switch (this.xDomainType) {
+      case 'number':
+        return (this.xScale as ScaleLinear<number, number>)(
+          (d.x as number) - (this.interval / 2)) +
+          this.scaleBandX(this.label);
+      case 'time':
+        return (this.xScale as ScaleTime<number, number>)(
+          moment(d.x).subtract(this.interval / 2, 's')) +
+          this.scaleBandX(this.label);
+    }
   }
 
   updateFocus(datumToHighlight: ChartDatum) {
