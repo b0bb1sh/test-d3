@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as d3 from 'd3';
-import { B3ChartType, ChartDatum } from './b3-chart.model';
-import { XDomainType } from 'src/app/chart/chart.model';
+import { B3ChartType, ChartDatum, XDomainType } from './b3-chart.model';
+import { ScaleLinear, ScaleTime } from 'd3';
 
 export class LineSeries implements B3ChartType {
 
@@ -13,8 +13,8 @@ export class LineSeries implements B3ChartType {
   }
   get xScale() {
     return this.xDomainType === 'number' ?
-      this._xScale as d3.ScaleLinear<number, number> :
-      this._xScale as d3.ScaleTime<number, number>;
+      this._xScale as ScaleLinear<number, number> :
+      this._xScale as ScaleTime<number, number>;
   }
 
   // yScale
@@ -126,7 +126,9 @@ export class LineSeries implements B3ChartType {
       // If there's a single line, we don't use the update pattern
       lines.attr('d', d3.line()
         .curve(this.smoothStyle ? d3.curveCardinal : d3.curveLinear)
-        .x((v) => this.xScale(_.get(v, 'x')))
+        .x((v) => this.xDomainType === 'number' ?
+          (this.xScale as ScaleLinear<number, number>)(_.get(v, 'x')) :
+          (this.xScale as ScaleTime<number, number>)(_.get(v, 'x')))
         .y((v) => this.yScale(_.get(v, 'y')))
       );
     }
@@ -142,7 +144,9 @@ export class LineSeries implements B3ChartType {
         .attr('fill', 'none')
         .attr('stroke', this.color)
         .merge(circles)
-        .attr('cx', d => this.xScale(d.x))
+        .attr('cx', d => this.xDomainType === 'number' ?
+          (this.xScale as ScaleLinear<number, number>)(d.x) :
+          (this.xScale as ScaleTime<number, number>)(d.x))
         .attr('cy', d => this.yScale(d.y));
     }
 

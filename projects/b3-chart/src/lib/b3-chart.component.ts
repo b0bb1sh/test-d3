@@ -2,12 +2,13 @@ import { Component, OnInit, OnDestroy, Input, ViewChild, ElementRef } from '@ang
 import { Subscription, Observable } from 'rxjs';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-import * as moment from 'moment';
+import * as moment_ from 'moment';
 import { LineSeries } from './LineSeries';
 import { BarSeries } from './BarSeries';
-import { ChartSeries, AxisDomain, XDomainType, ChartConfig, ChartDatum, Unit, YAxisInfo, PROBES_GRAPH_YAXIS_INFO } from '../public_api';
-import { ScaleLinear, ScaleTime } from 'd3';
+import { ChartSeries, AxisDomain, XDomainType, ChartConfig, ChartDatum, Unit, YAxisInfo, PROBES_GRAPH_YAXIS_INFO } from './b3-chart.model';
+import { ScaleLinear, ScaleTime, ScaleOrdinal } from 'd3';
 
+const moment = moment_;
 
 const WIDTH = 960;
 const HEIGHT = 320;
@@ -18,24 +19,10 @@ const TEXT_PADDING = 20;
   // tslint:disable-next-line: component-selector
   selector: 'b3-chart',
   template: `<svg #chartContainer></svg>
-    <div id='tooltip' class='tooltip p-1'></div>
+    <div id='tooltip'></div>
     <!--Add timeline
       <svg *ngIf="showTimeline" #timelineContainer></svg>-->
-    <svg #legendContainer class="legendContainer"></svg>`,
-  styles: [`
-    .legendContainer {
-      width: 100%
-      padding-left: 1em
-      padding-right: 1em
-    }
-    .tooltip {
-      position: absolute
-      background-color: #343b40
-      color: #eeefef
-      border-radius: 3px
-      padding: 0.5rem
-    }
-  `]
+    <svg #legendContainer></svg>`
 })
 
 export class B3ChartComponent implements OnInit, OnDestroy {
@@ -53,10 +40,10 @@ export class B3ChartComponent implements OnInit, OnDestroy {
   @ViewChild('chartContainer') private chartContainerRef: ElementRef;
   @ViewChild('legendContainer') private legendContainerRef: ElementRef;
 
-  private x: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
+  private x: ScaleTime<number, number> | ScaleLinear<number, number>;
   private scaleBandX;
-  private ys: Record<string, d3.ScaleLinear<number, number>> = {};
-  private colors: d3.ScaleOrdinal<string, string>;
+  private ys: Record<string, ScaleLinear<number, number>> = {};
+  private colors: ScaleOrdinal<string, string>;
   private bisect = d3.bisector((d: ChartDatum) => d.x);
   private width: number;
   private height: number;
@@ -78,7 +65,7 @@ export class B3ChartComponent implements OnInit, OnDestroy {
   private isDatasetEmpty(dataSet: Array<ChartSeries>): boolean {
     return _.isNil(dataSet) ||
       _.size(dataSet) === 0 ||
-      _.every(dataSet, d => _.size(d.data) === 0)
+      _.every(dataSet, d => _.size(d.data) === 0);
   }
 
   ngOnInit(): void {
@@ -205,7 +192,13 @@ export class B3ChartComponent implements OnInit, OnDestroy {
     this.tooltipLine = this.dataGroup.append('line');
 
     // Init tooltip
-    this.tooltip = d3.select('#tooltip');
+    this.tooltip = d3.select('#tooltip')
+      .style('position', 'absolute')
+      .style('background-color', '#343b40')
+      .style('color', '#eeefef')
+      .style('border-radius', '3px')
+      .style('padding', '0.5rem');
+
     this.chartGroup.append('rect')
       .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
       .attr('width', this.width - (this.margin.left + this.margin.right))
@@ -219,7 +212,10 @@ export class B3ChartComponent implements OnInit, OnDestroy {
 
     // Init legend box
     if (this.chartConfig.showLegend) {
-      this.legendContainer = d3.select(this.legendContainerRef.nativeElement);
+      this.legendContainer = d3.select(this.legendContainerRef.nativeElement)
+        .style('width', '100%')
+        .style('padding-left', '1em')
+        .style('padding-right', '1em');
     }
   }
 
@@ -325,8 +321,12 @@ export class B3ChartComponent implements OnInit, OnDestroy {
       // Update tooltip line position
       this.tooltipLine.raise();
       this.tooltipLine.attr('stroke', 'black')
-        .attr('x1', this.x(nearestValue.x))
-        .attr('x2', this.x(nearestValue.x))
+        .attr('x1', this.xDomainType === 'time' ?
+          (this.x as ScaleTime<number, number>)(nearestValue.x) :
+          (this.x as ScaleLinear<number, number>)(nearestValue.x))
+        .attr('x2', this.xDomainType === 'time' ?
+          (this.x as ScaleTime<number, number>)(nearestValue.x) :
+          (this.x as ScaleLinear<number, number>)(nearestValue.x))
         .attr('y1', 0)
         .attr('y2', this.height);
 
@@ -352,7 +352,7 @@ export class B3ChartComponent implements OnInit, OnDestroy {
   }
 
   private updateXAxes(): void {
-    // Check if there's at least one bar series 
+    // Check if there's at least one bar series
     const addBarOffset = _.chain(this.seriesList)
       .filter(series => series.chartType === 'bar')
       .size().value() > 0;
@@ -533,7 +533,7 @@ export class B3ChartComponent implements OnInit, OnDestroy {
       // const text = selectedLegendItem.select('text');
       // text.attr('text-decoration', hidden ? '' : 'line-through');
       selectedLegendItem.attr('fill-opacity', hidden ? 1 : 0.2);
-      selectedLegendItem.select('rect').attr('fill-opacity', hidden ? 1 : 0.2)
+      selectedLegendItem.select('rect').attr('fill-opacity', hidden ? 1 : 0.2);
       _.set(series, 'hidden', !hidden);
       self.updateAllGraphElements();
     });
@@ -562,11 +562,11 @@ export class B3ChartComponent implements OnInit, OnDestroy {
       'number': () => [
         0,
         (this.x as ScaleLinear<number, number>)((firstXTick as number) + this.interval) -
-         (this.x as ScaleLinear<number, number>)((firstXTick as number))]
+        (this.x as ScaleLinear<number, number>)((firstXTick as number))]
       ,
       'time': () => [
         0,
-        (this.x as ScaleTime<number, number>)(moment(firstXTick).add(this.interval, 's')) - 
+        (this.x as ScaleTime<number, number>)(moment(firstXTick).add(this.interval, 's')) -
         (this.x as ScaleTime<number, number>)(moment(firstXTick))]
     };
 

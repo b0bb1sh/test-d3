@@ -1,14 +1,11 @@
 import { B3ChartType, ChartDatum, XDomainType, TRANSITION_DURATION } from './b3-chart.model';
 import * as _ from 'lodash';
-import * as moment from 'moment';
-import { ScaleBand } from 'd3';
+import * as moment_ from 'moment';
+import { ScaleBand, ScaleLinear, ScaleTime } from 'd3';
 import * as d3 from 'd3';
 
+const moment = moment_;
 
-const xOffset: Record<XDomainType, Function> = {
-  'number': (x: number, interval: number) => x - (interval / 2),
-  'time': (x: number, interval: number) => moment(x).subtract(interval / 2, 's')
-};
 
 export class BarSeries implements B3ChartType {
 
@@ -32,7 +29,7 @@ export class BarSeries implements B3ChartType {
   }
 
   // xScale
-  private _xScale: d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
+  private _xScale: ScaleTime<number, number> | ScaleLinear<number, number>;
   set xScale(scale) {
     this._xScale = scale;
   }
@@ -41,7 +38,7 @@ export class BarSeries implements B3ChartType {
   }
 
   // yScale
-  private _yScale: d3.ScaleLinear<number, number>;
+  private _yScale: ScaleLinear<number, number>;
   set yScale(scale) {
     this._yScale = scale;
   }
@@ -72,8 +69,16 @@ export class BarSeries implements B3ChartType {
   }
 
   getXPosition = (d: ChartDatum) => {
-    return this.xScale(_.get(xOffset, this.xDomainType)(d.x, this.interval))
-      + this.scaleBandX(this.label);
+    switch (this.xDomainType) {
+      case 'number':
+        return (this.xScale as ScaleLinear<number, number>)(
+          (d.x as number) - (this.interval / 2)) +
+          this.scaleBandX(this.label);
+      case 'time':
+        return (this.xScale as ScaleTime<number, number>)(
+          moment(d.x).subtract(this.interval / 2, 's')) +
+          this.scaleBandX(this.label);
+    }
   }
 
   updateFocus(datumToHighlight: ChartDatum) {
